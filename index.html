@@ -929,189 +929,597 @@ button:disabled{
     );
 
 
-  /* 결과 이미지 저장 */
-  saveBtn.addEventListener(
-    "click",
-    async function(){
-
-      try{
-
-        saveBtn.disabled = true;
-        saveBtn.textContent =
-          "이미지 만드는 중...";
+ /* 결과 이미지 저장 */
 
 
-        const againBtn =
-          document.getElementById("againBtn");
 
-        const changeBtn =
-          document.getElementById("changeBtn");
+saveBtn.addEventListener(
 
+"click",
 
-        /* 저장 이미지에는 버튼 제외 */
-        againBtn.style.display =
-          "none";
-
-        changeBtn.style.display =
-          "none";
-
-        saveBtn.style.display =
-          "none";
+async function(){
 
 
-        const canvas =
-          await html2canvas(
-            mainCard,
-            {
-              scale:2,
-              backgroundColor:"#fffafd",
-              useCORS:true
-            }
-          );
+
+const againBtn =
+
+document.getElementById("againBtn");
 
 
-        againBtn.style.display =
-          "";
 
-        changeBtn.style.display =
-          "";
+const changeBtn =
 
-        saveBtn.style.display =
-          "";
+document.getElementById("changeBtn");
 
 
-        const blob =
-          await new Promise(
-            function(resolve){
 
-              canvas.toBlob(
-                resolve,
-                "image/png"
-              );
-
-            }
-          );
+let blob = null;
 
 
-        if(!blob){
 
-          throw new Error(
-            "이미지 생성 실패"
-          );
-
-        }
+try{
 
 
-        const file =
-          new File(
-            [blob],
-            "번호뽑기_결과.png",
-            {
-              type:"image/png"
-            }
-          );
+
+saveBtn.disabled = true;
+
+saveBtn.textContent = "이미지 만드는 중...";
 
 
-        /* 모바일 공유 */
-        if(
-          navigator.share
-          &&
-          navigator.canShare
-          &&
-          navigator.canShare({
-            files:[file]
-          })
-        ){
 
-          await navigator.share({
-            files:[file],
-            title:"번호 뽑기 결과"
-          });
+/* 저장되는 이미지에는 버튼 안 나오게 */
 
-        }
+againBtn.style.display = "none";
 
-        /* PC 다운로드 */
-        else{
+changeBtn.style.display = "none";
 
-          const url =
-            URL.createObjectURL(
-              blob
-            );
-
-          const link =
-            document.createElement(
-              "a"
-            );
-
-          link.href =
-            url;
-
-          link.download =
-            "번호뽑기_결과.png";
-
-          document.body.appendChild(
-            link
-          );
-
-          link.click();
-
-          link.remove();
+saveBtn.style.display = "none";
 
 
-          setTimeout(
-            function(){
 
-              URL.revokeObjectURL(
-                url
-              );
 
-            },
-            1000
-          );
 
-        }
+/* 결과 카드 이미지 만들기 */
 
-      }
+const canvas =
 
-      catch(error){
+await html2canvas(
 
-        if(
-          error.name !== "AbortError"
-        ){
+mainCard,
 
-          alert(
-            "이미지 저장 중 오류가 발생했어요 ㅠㅠ"
-          );
+{
 
-          console.error(
-            error
-          );
+scale:2,
 
-        }
+backgroundColor:"#fffafd",
 
-      }
+useCORS:true
 
-      finally{
+}
 
-        document
-          .getElementById("againBtn")
-          .style.display = "";
+);
 
-        document
-          .getElementById("changeBtn")
-          .style.display = "";
 
-        saveBtn.style.display = "";
 
-        saveBtn.disabled = false;
 
-        saveBtn.textContent =
-          "결과 이미지 저장";
 
-      }
+/* 버튼 다시 보이게 */
 
-    }
-  );
+againBtn.style.display = "";
+
+changeBtn.style.display = "";
+
+saveBtn.style.display = "";
+
+
+
+
+
+blob =
+
+await new Promise(
+
+function(resolve){
+
+
+
+canvas.toBlob(
+
+resolve,
+
+"image/png"
+
+);
+
+
+
+}
+
+);
+
+
+
+
+
+if(!blob){
+
+
+
+throw new Error(
+
+"이미지 생성 실패"
+
+);
+
+
+
+}
+
+
+
+
+
+const fileName =
+
+"번호뽑기_결과.png";
+
+
+
+
+
+const isAndroid =
+
+/Android/i.test(
+
+navigator.userAgent
+
+);
+
+
+
+
+
+const isIOS =
+
+/iPhone|iPad|iPod/i.test(
+
+navigator.userAgent
+
+);
+
+
+
+
+
+/* =========================
+
+아이폰
+
+→ 공유창 열기
+
+========================= */
+
+
+
+if(isIOS){
+
+
+
+const file =
+
+new File(
+
+[blob],
+
+fileName,
+
+{
+
+type:"image/png"
+
+}
+
+);
+
+
+
+
+
+if(
+
+navigator.share
+
+&&
+
+(
+
+!navigator.canShare
+
+||
+
+navigator.canShare({
+
+files:[file]
+
+})
+
+)
+
+){
+
+
+
+await navigator.share({
+
+files:[file],
+
+title:"번호 뽑기 결과"
+
+});
+
+
+
+return;
+
+
+
+}
+
+
+
+}
+
+
+
+
+
+/* =========================
+
+갤럭시 / 안드로이드
+
+→ PNG 다운로드
+
+========================= */
+
+
+
+if(isAndroid){
+
+
+
+const url =
+
+URL.createObjectURL(blob);
+
+
+
+
+
+const link =
+
+document.createElement("a");
+
+
+
+
+
+link.href = url;
+
+
+
+link.download =
+
+fileName;
+
+
+
+
+
+document.body.appendChild(
+
+link
+
+);
+
+
+
+
+
+link.click();
+
+
+
+
+
+link.remove();
+
+
+
+
+
+setTimeout(
+
+function(){
+
+
+
+URL.revokeObjectURL(
+
+url
+
+);
+
+
+
+},
+
+3000
+
+);
+
+
+
+
+
+return;
+
+
+
+}
+
+
+
+
+
+/* =========================
+
+PC
+
+→ PNG 다운로드
+
+========================= */
+
+
+
+const url =
+
+URL.createObjectURL(blob);
+
+
+
+
+
+const link =
+
+document.createElement("a");
+
+
+
+
+
+link.href = url;
+
+
+
+link.download =
+
+fileName;
+
+
+
+
+
+document.body.appendChild(
+
+link
+
+);
+
+
+
+
+
+link.click();
+
+
+
+
+
+link.remove();
+
+
+
+
+
+setTimeout(
+
+function(){
+
+
+
+URL.revokeObjectURL(
+
+url
+
+);
+
+
+
+},
+
+3000
+
+);
+
+
+
+}
+
+
+
+
+
+catch(error){
+
+
+
+/*
+
+사용자가 아이폰 공유창에서
+
+취소한 경우에는 오류 아님
+
+*/
+
+if(
+
+error.name === "AbortError"
+
+){
+
+
+
+return;
+
+
+
+}
+
+
+
+
+
+/*
+
+저장이 안 되는 모바일 브라우저의
+
+최후 방법 → 이미지 자체를 새 화면으로 열기
+
+*/
+
+if(blob){
+
+
+
+try{
+
+
+
+const imageUrl =
+
+URL.createObjectURL(blob);
+
+
+
+
+
+const newWindow =
+
+window.open(
+
+imageUrl,
+
+"_blank"
+
+);
+
+
+
+
+
+if(newWindow){
+
+
+
+alert(
+
+"이미지를 길게 눌러 저장해주세요 ♡"
+
+);
+
+
+
+return;
+
+
+
+}
+
+
+
+}catch(e){
+
+
+
+console.error(e);
+
+
+
+}
+
+
+
+}
+
+
+
+
+
+alert(
+
+"이미지 저장 중 오류가 발생했어요 ㅠㅠ"
+
+);
+
+
+
+console.error(error);
+
+
+
+}
+
+
+
+
+
+finally{
+
+
+
+/* 무슨 일이 생겨도 버튼 원상복구 */
+
+
+
+againBtn.style.display = "";
+
+changeBtn.style.display = "";
+
+
+
+saveBtn.style.display = "";
+
+
+
+saveBtn.disabled = false;
+
+
+
+saveBtn.textContent =
+
+"결과 이미지 저장";
+
+
+
+}
+
+
+
+}
+
+); 
+
+
 
 
 })();
