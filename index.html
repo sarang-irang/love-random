@@ -9,7 +9,6 @@
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#f28bb4">
 
-<!-- 아이폰 홈 화면 앱 설정 -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="번호 뽑기">
@@ -41,7 +40,6 @@ body{
 }
 
 /* 배경 하트 */
-
 .hearts{
   position:fixed;
   inset:0;
@@ -85,10 +83,11 @@ body{
   100%{transform:translateY(8px)}
 }
 
-/* 메인 카드 */
-
+/* 카드 */
 .card{
   width:min(92vw,430px);
+  max-height:94vh;
+  overflow-y:auto;
   background:rgba(255,255,255,.95);
   border:1px solid #ffd6e6;
   border-radius:30px;
@@ -114,8 +113,7 @@ p{
   line-height:1.2;
 }
 
-/* 숫자 범위 */
-
+/* 범위 */
 .range{
   display:flex;
   align-items:center;
@@ -147,9 +145,8 @@ input:focus{
 }
 
 /* 제외 번호 */
-
 .exclude-wrap{
-  margin:0 0 18px;
+  margin:0 0 14px;
 }
 
 .exclude-label{
@@ -164,8 +161,69 @@ input:focus{
   font-size:26px;
 }
 
-/* 버튼 */
+/* 중복 설정 */
+.duplicate-setting{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:7px 0 20px;
+  padding:12px 15px;
+  background:#fff7fa;
+  border:1px solid #ffe0eb;
+  border-radius:16px;
+}
 
+.duplicate-text{
+  font-size:25px;
+  color:#9e7b88;
+  line-height:1;
+}
+
+/* 스위치 */
+.switch{
+  position:relative;
+  width:52px;
+  height:29px;
+  flex-shrink:0;
+}
+
+.switch input{
+  opacity:0;
+  width:0;
+  height:0;
+}
+
+.slider{
+  position:absolute;
+  inset:0;
+  cursor:pointer;
+  background:#f3d5e0;
+  border-radius:30px;
+  transition:.25s;
+}
+
+.slider:before{
+  content:"";
+  position:absolute;
+  width:23px;
+  height:23px;
+  left:3px;
+  top:3px;
+  background:white;
+  border-radius:50%;
+  box-shadow:0 2px 5px rgba(0,0,0,.12);
+  transition:.25s;
+}
+
+.switch input:checked + .slider{
+  background:#f28bb4;
+}
+
+.switch input:checked + .slider:before{
+  transform:translateX(23px);
+}
+
+/* 버튼 */
 button{
   width:100%;
   border:0;
@@ -185,6 +243,10 @@ button:active{
   transform:scale(.98);
 }
 
+button:disabled{
+  opacity:.65;
+}
+
 .small{
   margin-top:10px;
   background:#fff0f6;
@@ -193,8 +255,7 @@ button:active{
   font-size:28px;
 }
 
-/* 결과 화면 */
-
+/* 결과 */
 #resultScreen{
   display:none;
 }
@@ -219,13 +280,13 @@ button:active{
 }
 
 .meta{
-  margin-top:12px;
+  margin-top:10px;
   color:#aa8c97;
   font-size:23px;
+  line-height:1.2;
 }
 
-/* 추첨 기록 */
-
+/* 기록 */
 #history{
   margin-top:16px;
   padding:13px 10px;
@@ -238,8 +299,7 @@ button:active{
   line-height:1.45;
 }
 
-/* 와르르 하트 */
-
+/* 하트 효과 */
 .burst-heart{
   position:fixed;
   left:50%;
@@ -251,7 +311,6 @@ button:active{
 }
 
 @keyframes burst{
-
   0%{
     opacity:.8;
     transform:
@@ -272,19 +331,13 @@ button:active{
       rotate(var(--r))
       scale(1.4);
   }
-
 }
-
 </style>
 </head>
 
-
 <body>
 
-<!-- 배경 하트 -->
-
 <div class="hearts">
-
   <div class="bg-heart">♥</div>
   <div class="bg-heart">♥</div>
   <div class="bg-heart">♥</div>
@@ -297,722 +350,780 @@ button:active{
   <div class="bg-heart">♥</div>
   <div class="bg-heart">♥</div>
   <div class="bg-heart">♥</div>
-
 </div>
-
 
 <main class="card" id="mainCard">
 
-
-<!-- 처음 화면 -->
-
+<!-- 첫 화면 -->
 <section id="drawScreen">
 
-<h1>⊹˚♡ 번호 뽑기 ♡˚⊹</h1>
+  <h1>⊹˚♡ 번호 뽑기 ♡˚⊹</h1>
 
-<p>
-원하는 숫자 범위를 입력한 뒤 뽑아주세요
-</p>
+  <p>원하는 숫자 범위를 입력한 뒤 뽑아주세요</p>
 
+  <form id="drawForm">
 
-<form id="drawForm">
+    <div class="range">
 
+      <input
+        id="minNum"
+        type="number"
+        value="1"
+        required
+      >
 
-<div class="range">
+      <span>~</span>
 
-<input
-id="minNum"
-type="number"
-value="1"
-required
->
+      <input
+        id="maxNum"
+        type="number"
+        value="100"
+        required
+      >
 
-<span>~</span>
+    </div>
 
-<input
-id="maxNum"
-type="number"
-value="100"
-required
->
+    <div class="exclude-wrap">
 
-</div>
+      <label
+        class="exclude-label"
+        for="excludeNums"
+      >
+        제외할 번호
+      </label>
 
+      <input
+        id="excludeNums"
+        type="text"
+        placeholder="예: 3, 7, 12"
+      >
 
-<div class="exclude-wrap">
+    </div>
 
-<label
-class="exclude-label"
-for="excludeNums"
->
-제외할 번호
-</label>
+    <!-- 중복 방지 -->
+    <div class="duplicate-setting">
 
-<input
-id="excludeNums"
-type="text"
-placeholder="예: 3, 7, 12"
->
+      <span class="duplicate-text">
+        중복 없이 뽑기
+      </span>
 
-</div>
+      <label class="switch">
 
+        <input
+          id="noDuplicate"
+          type="checkbox"
+        >
 
-<button type="submit">
-번호 뽑기
-</button>
+        <span class="slider"></span>
 
+      </label>
 
-</form>
+    </div>
+
+    <button type="submit">
+      번호 뽑기
+    </button>
+
+  </form>
 
 </section>
-
 
 
 <!-- 결과 화면 -->
-
 <section id="resultScreen">
 
+  <h1>⊹˚♡ 뽑힌 번호 ♡˚⊹</h1>
 
-<h1>
-⊹˚♡ 뽑힌 번호 ♡˚⊹
-</h1>
+  <div class="resultBox">
+    <div id="resultNumber">?</div>
+  </div>
 
+  <button
+    id="againBtn"
+    type="button"
+  >
+    한 번 더 뽑기
+  </button>
 
-<div class="resultBox">
+  <button
+    id="saveBtn"
+    type="button"
+    class="small"
+  >
+    결과 이미지 저장
+  </button>
 
-<div id="resultNumber">
-?
-</div>
+  <button
+    id="changeBtn"
+    type="button"
+    class="small"
+  >
+    범위 다시 정하기
+  </button>
 
-</div>
+  <div
+    class="meta"
+    id="rangeText"
+  ></div>
 
+  <div
+    class="meta"
+    id="excludeText"
+  ></div>
 
-<button
-id="againBtn"
-type="button"
->
-한 번 더 뽑기
-</button>
+  <div
+    class="meta"
+    id="duplicateText"
+  ></div>
 
-
-<button
-id="saveBtn"
-type="button"
-class="small"
->
-결과 이미지 저장
-</button>
-
-
-<button
-id="changeBtn"
-type="button"
-class="small"
->
-범위 다시 정하기
-</button>
-
-
-<div
-class="meta"
-id="rangeText"
-></div>
-
-
-<div
-class="meta"
-id="excludeText"
-></div>
-
-
-<div id="history"></div>
-
+  <div id="history"></div>
 
 </section>
-
 
 </main>
 
 
 <script>
-
 (function(){
 
+  const drawScreen =
+    document.getElementById("drawScreen");
 
-const drawScreen =
-document.getElementById("drawScreen");
+  const resultScreen =
+    document.getElementById("resultScreen");
 
-const resultScreen =
-document.getElementById("resultScreen");
+  const resultNumber =
+    document.getElementById("resultNumber");
 
-const resultNumber =
-document.getElementById("resultNumber");
+  const minInput =
+    document.getElementById("minNum");
 
-const minInput =
-document.getElementById("minNum");
+  const maxInput =
+    document.getElementById("maxNum");
 
-const maxInput =
-document.getElementById("maxNum");
+  const excludeInput =
+    document.getElementById("excludeNums");
 
-const excludeInput =
-document.getElementById("excludeNums");
+  const noDuplicateInput =
+    document.getElementById("noDuplicate");
 
-const rangeText =
-document.getElementById("rangeText");
+  const rangeText =
+    document.getElementById("rangeText");
 
-const excludeText =
-document.getElementById("excludeText");
+  const excludeText =
+    document.getElementById("excludeText");
 
-const history =
-document.getElementById("history");
+  const duplicateText =
+    document.getElementById("duplicateText");
 
-const saveBtn =
-document.getElementById("saveBtn");
+  const history =
+    document.getElementById("history");
 
-const mainCard =
-document.getElementById("mainCard");
+  const saveBtn =
+    document.getElementById("saveBtn");
 
+  const mainCard =
+    document.getElementById("mainCard");
 
-let currentMin = 1;
-let currentMax = 100;
 
-let excludedNumbers = [];
+  let currentMin = 1;
+  let currentMax = 100;
 
-let results = [];
+  let excludedNumbers = [];
 
+  let results = [];
 
+  let noDuplicate = false;
 
-/* 제외 번호 읽기 */
 
-function parseExcludedNumbers(){
+  /* 제외 번호 */
+  function parseExcludedNumbers(){
 
-const text =
-excludeInput.value.trim();
+    const text =
+      excludeInput.value.trim();
 
-if(!text){
-return [];
-}
+    if(!text){
+      return [];
+    }
 
-return [...new Set(
+    return [...new Set(
+      text
+        .split(/[,\s]+/)
+        .map(Number)
+        .filter(function(n){
+          return Number.isInteger(n);
+        })
+    )];
 
-text
-.split(/[,\s]+/)
-.map(Number)
-.filter(function(n){
+  }
 
-return Number.isInteger(n);
 
-})
+  /* 현재 뽑을 수 있는 번호 */
+  function getAvailableNumbers(){
 
-)];
+    const available = [];
 
-}
+    for(
+      let i=currentMin;
+      i<=currentMax;
+      i++
+    ){
 
+      /* 사용자가 직접 제외한 번호 */
+      if(
+        excludedNumbers.includes(i)
+      ){
+        continue;
+      }
 
+      /* 중복 없이 뽑기 활성화 시
+         이미 나온 번호도 제외 */
+      if(
+        noDuplicate
+        &&
+        results.includes(i)
+      ){
+        continue;
+      }
 
-/* 실제 뽑을 수 있는 번호 */
+      available.push(i);
 
-function getAvailableNumbers(){
+    }
 
-const available = [];
+    return available;
 
-for(
-let i=currentMin;
-i<=currentMax;
-i++
-){
+  }
 
-if(
-!excludedNumbers.includes(i)
-){
 
-available.push(i);
+  /* 랜덤 선택 */
+  function randomFromArray(array){
 
-}
+    const index =
+      Math.floor(
+        Math.random() * array.length
+      );
 
-}
+    return array[index];
 
-return available;
+  }
 
-}
 
+  /* 하트 와르르 */
+  function heartBurst(){
 
+    for(let i=0; i<35; i++){
 
-/* 랜덤 선택 */
+      const heart =
+        document.createElement("div");
 
-function randomFromArray(array){
+      heart.className =
+        "burst-heart";
 
-const index =
-Math.floor(
-Math.random() * array.length
-);
+      heart.textContent =
+        "♥";
 
-return array[index];
+      const angle =
+        Math.random()
+        * Math.PI
+        * 2;
 
-}
+      const distance =
+        90
+        + Math.random()
+        * 250;
 
+      const x =
+        Math.cos(angle)
+        * distance;
 
+      const y =
+        Math.sin(angle)
+        * distance;
 
-/* 하트 와르르 */
+      heart.style.setProperty(
+        "--x",
+        x + "px"
+      );
 
-function heartBurst(){
+      heart.style.setProperty(
+        "--y",
+        y + "px"
+      );
 
-for(
-let i=0;
-i<35;
-i++
-){
+      heart.style.setProperty(
+        "--r",
+        (Math.random()*80-40)
+        + "deg"
+      );
 
-const heart =
-document.createElement("div");
+      heart.style.fontSize =
+        (18 + Math.random()*30)
+        + "px";
 
-heart.className =
-"burst-heart";
+      heart.style.animationDuration =
+        (1.3 + Math.random()*.8)
+        + "s";
 
-heart.textContent =
-"♥";
+      document.body.appendChild(
+        heart
+      );
 
+      setTimeout(
+        function(){
+          heart.remove();
+        },
+        2300
+      );
 
-const angle =
-Math.random()
-*
-Math.PI
-*
-2;
+    }
 
+  }
 
-const distance =
-90
-+
-Math.random()
-*
-250;
 
+  /* 기록 */
+  function updateHistory(){
 
-const x =
-Math.cos(angle)
-*
-distance;
+    let text = "";
 
-const y =
-Math.sin(angle)
-*
-distance;
+    results.forEach(
+      function(number,index){
 
+        text +=
+          (index+1)
+          + "번째 추첨 결과 : "
+          + number
+          + "<br>";
 
-heart.style.setProperty(
-"--x",
-x + "px"
-);
+      }
+    );
 
+    history.innerHTML =
+      text;
 
-heart.style.setProperty(
-"--y",
-y + "px"
-);
+  }
 
 
-heart.style.setProperty(
-"--r",
-(Math.random()*80-40)
-+
-"deg"
-);
+  /* 번호 뽑기 */
+  function showResult(){
 
+    const available =
+      getAvailableNumbers();
 
-heart.style.fontSize =
-(18 + Math.random()*30)
-+
-"px";
 
+    if(
+      available.length === 0
+    ){
 
-heart.style.animationDuration =
-(1.3 + Math.random()*.8)
-+
-"s";
+      if(noDuplicate){
 
+        alert(
+          "모든 번호를 다 뽑았어요 ♡\n범위를 다시 정해주세요!"
+        );
 
-document.body.appendChild(
-heart
-);
+      }else{
 
+        alert(
+          "뽑을 수 있는 번호가 없어요 ♡"
+        );
 
-setTimeout(
-function(){
+      }
 
-heart.remove();
+      return;
 
-},
-2300
-);
+    }
 
-}
 
-}
+    const picked =
+      randomFromArray(
+        available
+      );
 
 
+    resultNumber.textContent =
+      picked;
 
-/* 추첨 기록 */
 
-function updateHistory(){
+    results.push(
+      picked
+    );
 
-let text = "";
 
-results.forEach(
-function(number,index){
+    updateHistory();
 
-text +=
-(index+1)
-+
-"번째 추첨 결과 : "
-+
-number
-+
-"<br>";
 
-}
-);
+    rangeText.textContent =
+      "현재 범위 : "
+      + currentMin
+      + " ~ "
+      + currentMax;
 
-history.innerHTML =
-text;
 
-}
+    if(
+      excludedNumbers.length > 0
+    ){
 
+      excludeText.textContent =
+        "제외 번호 : "
+        + excludedNumbers.join(", ");
 
+    }else{
 
-/* 번호 뽑기 */
+      excludeText.textContent =
+        "";
 
-function showResult(){
+    }
 
-const available =
-getAvailableNumbers();
 
+    if(noDuplicate){
 
-if(
-available.length === 0
-){
+      duplicateText.textContent =
+        "중복 없이 뽑는 중 ♡";
 
-alert(
-"뽑을 수 있는 번호가 없어요 ♡"
-);
+    }else{
 
-return;
+      duplicateText.textContent =
+        "";
 
-}
+    }
 
 
-const picked =
-randomFromArray(
-available
-);
+    drawScreen.style.display =
+      "none";
 
+    resultScreen.style.display =
+      "block";
 
-resultNumber.textContent =
-picked;
 
+    heartBurst();
 
-results.push(
-picked
-);
+  }
 
 
-updateHistory();
+  /* 첫 추첨 */
+  document
+    .getElementById("drawForm")
+    .addEventListener(
+      "submit",
+      function(e){
 
+        e.preventDefault();
 
-rangeText.textContent =
-"현재 범위 : "
-+
-currentMin
-+
-" ~ "
-+
-currentMax;
 
+        const min =
+          Number(minInput.value);
 
-if(
-excludedNumbers.length > 0
-){
+        const max =
+          Number(maxInput.value);
 
-excludeText.textContent =
-"제외 번호 : "
-+
-excludedNumbers.join(", ");
 
-}
+        if(
+          !Number.isInteger(min)
+          ||
+          !Number.isInteger(max)
+        ){
 
-else{
+          alert(
+            "정수를 입력해주세요 ♡"
+          );
 
-excludeText.textContent =
-"";
+          return;
 
-}
+        }
 
 
-drawScreen.style.display =
-"none";
+        if(min > max){
 
-resultScreen.style.display =
-"block";
+          alert(
+            "시작 숫자는 끝 숫자보다 작거나 같아야 해요 ♡"
+          );
 
+          return;
 
-heartBurst();
+        }
 
-}
 
+        currentMin = min;
+        currentMax = max;
 
 
-/* 첫 추첨 */
+        excludedNumbers =
+          parseExcludedNumbers()
+          .filter(
+            function(n){
 
-document
-.getElementById("drawForm")
-.addEventListener(
-"submit",
-function(e){
+              return (
+                n >= currentMin
+                &&
+                n <= currentMax
+              );
 
-e.preventDefault();
+            }
+          );
 
 
-const min =
-Number(
-minInput.value
-);
+        noDuplicate =
+          noDuplicateInput.checked;
 
-const max =
-Number(
-maxInput.value
-);
 
+        results = [];
 
-if(
-!Number.isInteger(min)
-||
-!Number.isInteger(max)
-){
 
-alert(
-"정수를 입력해주세요 ♡"
-);
+        if(
+          getAvailableNumbers().length
+          === 0
+        ){
 
-return;
+          alert(
+            "범위 안의 모든 번호가 제외되어 있어요 ♡"
+          );
 
-}
+          return;
 
+        }
 
-if(
-min > max
-){
 
-alert(
-"시작 숫자는 끝 숫자보다 작거나 같아야 해요 ♡"
-);
+        showResult();
 
-return;
+      }
+    );
 
-}
 
+  /* 한 번 더 */
+  document
+    .getElementById("againBtn")
+    .addEventListener(
+      "click",
+      showResult
+    );
 
-currentMin = min;
 
-currentMax = max;
+  /* 범위 다시 정하기 */
+  document
+    .getElementById("changeBtn")
+    .addEventListener(
+      "click",
+      function(){
 
+        results = [];
 
-excludedNumbers =
-parseExcludedNumbers()
-.filter(
-function(n){
+        history.innerHTML = "";
 
-return (
-n >= currentMin
-&&
-n <= currentMax
-);
+        resultScreen.style.display =
+          "none";
 
-}
-);
+        drawScreen.style.display =
+          "block";
 
+      }
+    );
 
-if(
-getAvailableNumbers().length
-===
-0
-){
 
-alert(
-"범위 안의 모든 번호가 제외되어 있어요 ♡"
-);
+  /* 결과 이미지 저장 */
+  saveBtn.addEventListener(
+    "click",
+    async function(){
 
-return;
+      try{
 
-}
+        saveBtn.disabled = true;
+        saveBtn.textContent =
+          "이미지 만드는 중...";
 
 
-results = [];
+        const againBtn =
+          document.getElementById("againBtn");
 
-showResult();
+        const changeBtn =
+          document.getElementById("changeBtn");
 
-}
-);
 
+        /* 저장 이미지에는 버튼 제외 */
+        againBtn.style.display =
+          "none";
 
+        changeBtn.style.display =
+          "none";
 
-/* 한 번 더 */
+        saveBtn.style.display =
+          "none";
 
-document
-.getElementById("againBtn")
-.addEventListener(
-"click",
-showResult
-);
 
+        const canvas =
+          await html2canvas(
+            mainCard,
+            {
+              scale:2,
+              backgroundColor:"#fffafd",
+              useCORS:true
+            }
+          );
 
 
-/* 범위 다시 정하기 */
+        againBtn.style.display =
+          "";
 
-document
-.getElementById("changeBtn")
-.addEventListener(
-"click",
-function(){
+        changeBtn.style.display =
+          "";
 
-results = [];
+        saveBtn.style.display =
+          "";
 
-history.innerHTML = "";
 
-resultScreen.style.display =
-"none";
+        const blob =
+          await new Promise(
+            function(resolve){
 
-drawScreen.style.display =
-"block";
+              canvas.toBlob(
+                resolve,
+                "image/png"
+              );
 
-}
-);
+            }
+          );
 
 
+        if(!blob){
 
-/* 결과 이미지 저장 */
+          throw new Error(
+            "이미지 생성 실패"
+          );
 
-saveBtn.addEventListener(
-"click",
-async function(){
+        }
 
-try{
 
-saveBtn.disabled = true;
+        const file =
+          new File(
+            [blob],
+            "번호뽑기_결과.png",
+            {
+              type:"image/png"
+            }
+          );
 
-saveBtn.textContent =
-"저장 중...";
 
+        /* 모바일 공유 */
+        if(
+          navigator.share
+          &&
+          navigator.canShare
+          &&
+          navigator.canShare({
+            files:[file]
+          })
+        ){
 
-const canvas =
-await html2canvas(
-mainCard,
-{
+          await navigator.share({
+            files:[file],
+            title:"번호 뽑기 결과"
+          });
 
-scale:2,
+        }
 
-backgroundColor:
-"#fffafd",
+        /* PC 다운로드 */
+        else{
 
-useCORS:true
+          const url =
+            URL.createObjectURL(
+              blob
+            );
 
-}
-);
+          const link =
+            document.createElement(
+              "a"
+            );
 
+          link.href =
+            url;
 
-const link =
-document.createElement("a");
+          link.download =
+            "번호뽑기_결과.png";
 
+          document.body.appendChild(
+            link
+          );
 
-link.download =
-"번호뽑기_결과.png";
+          link.click();
 
+          link.remove();
 
-link.href =
-canvas.toDataURL(
-"image/png"
-);
 
+          setTimeout(
+            function(){
 
-link.click();
+              URL.revokeObjectURL(
+                url
+              );
 
+            },
+            1000
+          );
 
-}
+        }
 
-catch(error){
+      }
 
-alert(
-"이미지 저장 중 오류가 발생했어요 ㅠㅠ"
-);
+      catch(error){
 
-console.error(
-error
-);
+        if(
+          error.name !== "AbortError"
+        ){
 
-}
+          alert(
+            "이미지 저장 중 오류가 발생했어요 ㅠㅠ"
+          );
 
-finally{
+          console.error(
+            error
+          );
 
-saveBtn.disabled = false;
+        }
 
-saveBtn.textContent =
-"결과 이미지 저장";
+      }
 
-}
+      finally{
 
-}
-);
+        document
+          .getElementById("againBtn")
+          .style.display = "";
+
+        document
+          .getElementById("changeBtn")
+          .style.display = "";
+
+        saveBtn.style.display = "";
+
+        saveBtn.disabled = false;
+
+        saveBtn.textContent =
+          "결과 이미지 저장";
+
+      }
+
+    }
+  );
 
 
 })();
-
 </script>
 
 
-<!-- PWA 서비스 워커 -->
-
+<!-- PWA -->
 <script>
+if("serviceWorker" in navigator){
 
-if(
-'serviceWorker'
-in navigator
-){
+  window.addEventListener(
+    "load",
+    function(){
 
-window.addEventListener(
-'load',
-function(){
+      navigator
+        .serviceWorker
+        .register("./sw.js");
 
-navigator
-.serviceWorker
-.register('./sw.js')
-
-.then(
-function(){
-
-console.log(
-'Service Worker 등록 완료!'
-);
+    }
+  );
 
 }
-)
-
-.catch(
-function(error){
-
-console.log(
-'Service Worker 등록 실패:',
-error
-);
-
-}
-);
-
-}
-);
-
-}
-
 </script>
-
 
 </body>
 </html>
