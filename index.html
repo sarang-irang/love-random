@@ -1,0 +1,1018 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>번호 뽑기 ♡</title>
+
+<!-- PWA -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#f28bb4">
+
+<!-- 아이폰 홈 화면 앱 설정 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="번호 뽑기">
+<link rel="apple-touch-icon" href="./icon-192.png">
+
+<!-- 폰트 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dongle:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- 이미지 저장 -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Dongle',sans-serif;
+  background:linear-gradient(145deg,#fffafd,#fff1f7);
+  color:#725963;
+  overflow:hidden;
+}
+
+/* 배경 하트 */
+
+.hearts{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+}
+
+.bg-heart{
+  position:absolute;
+  color:#f7cddd;
+  opacity:.25;
+  animation:float 6s ease-in-out infinite;
+}
+
+.bg-heart:nth-child(1){left:5%;top:8%;font-size:50px}
+.bg-heart:nth-child(2){left:18%;top:27%;font-size:30px}
+.bg-heart:nth-child(3){left:7%;top:65%;font-size:42px}
+.bg-heart:nth-child(4){left:22%;top:84%;font-size:54px}
+.bg-heart:nth-child(5){left:43%;top:5%;font-size:32px}
+.bg-heart:nth-child(6){left:49%;top:88%;font-size:38px}
+.bg-heart:nth-child(7){right:7%;top:10%;font-size:52px}
+.bg-heart:nth-child(8){right:20%;top:30%;font-size:31px}
+.bg-heart:nth-child(9){right:5%;top:61%;font-size:43px}
+.bg-heart:nth-child(10){right:18%;top:82%;font-size:30px}
+.bg-heart:nth-child(11){left:30%;top:50%;font-size:25px}
+.bg-heart:nth-child(12){right:31%;top:17%;font-size:27px}
+
+.bg-heart:nth-child(2n){
+  animation-duration:7.5s;
+  animation-delay:-2s;
+}
+
+.bg-heart:nth-child(3n){
+  animation-duration:5.5s;
+  animation-delay:-3s;
+}
+
+@keyframes float{
+  0%{transform:translateY(8px)}
+  50%{transform:translateY(-17px)}
+  100%{transform:translateY(8px)}
+}
+
+/* 메인 카드 */
+
+.card{
+  width:min(92vw,430px);
+  background:rgba(255,255,255,.95);
+  border:1px solid #ffd6e6;
+  border-radius:30px;
+  padding:34px 25px;
+  text-align:center;
+  box-shadow:0 18px 50px rgba(219,130,164,.18);
+  position:relative;
+  z-index:2;
+}
+
+h1{
+  margin:0 0 8px;
+  color:#e96f9f;
+  font-size:43px;
+  line-height:1.1;
+  font-weight:700;
+}
+
+p{
+  margin:8px 0 20px;
+  color:#a58491;
+  font-size:27px;
+  line-height:1.2;
+}
+
+/* 숫자 범위 */
+
+.range{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:22px 0 16px;
+}
+
+.range span{
+  font-size:30px;
+  color:#c293a5;
+}
+
+input{
+  width:100%;
+  min-width:0;
+  padding:10px 8px;
+  border:1.5px solid #ffd0e2;
+  border-radius:16px;
+  background:#fff9fb;
+  text-align:center;
+  font-family:'Dongle',sans-serif;
+  font-size:31px;
+  color:#725963;
+  outline:none;
+}
+
+input:focus{
+  border-color:#f3a1c0;
+}
+
+/* 제외 번호 */
+
+.exclude-wrap{
+  margin:0 0 18px;
+}
+
+.exclude-label{
+  display:block;
+  text-align:left;
+  margin-bottom:5px;
+  font-size:23px;
+  color:#a58491;
+}
+
+#excludeNums{
+  font-size:26px;
+}
+
+/* 버튼 */
+
+button{
+  width:100%;
+  border:0;
+  border-radius:18px;
+  padding:11px;
+  background:#f28bb4;
+  color:white;
+  font-family:'Dongle',sans-serif;
+  font-size:31px;
+  line-height:1.15;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 7px 16px rgba(242,139,180,.25);
+}
+
+button:active{
+  transform:scale(.98);
+}
+
+.small{
+  margin-top:10px;
+  background:#fff0f6;
+  color:#d76d98;
+  box-shadow:none;
+  font-size:28px;
+}
+
+/* 결과 화면 */
+
+#resultScreen{
+  display:none;
+}
+
+.resultBox{
+  height:190px;
+  margin:22px 0 18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:2px dashed #ffc4db;
+  border-radius:28px;
+  background:#fff5f9;
+}
+
+#resultNumber{
+  font-size:135px;
+  line-height:1;
+  font-weight:700;
+  color:#ee75a5;
+  text-shadow:0 5px 0 #ffe0eb;
+}
+
+.meta{
+  margin-top:12px;
+  color:#aa8c97;
+  font-size:23px;
+}
+
+/* 추첨 기록 */
+
+#history{
+  margin-top:16px;
+  padding:13px 10px;
+  max-height:150px;
+  overflow-y:auto;
+  background:#fff8fb;
+  border-radius:16px;
+  color:#a7788a;
+  font-size:24px;
+  line-height:1.45;
+}
+
+/* 와르르 하트 */
+
+.burst-heart{
+  position:fixed;
+  left:50%;
+  top:50%;
+  pointer-events:none;
+  color:#f5b8cf;
+  z-index:999;
+  animation:burst 1.8s ease-out forwards;
+}
+
+@keyframes burst{
+
+  0%{
+    opacity:.8;
+    transform:
+      translate(-50%,-50%)
+      translate(0,0)
+      scale(.5);
+  }
+
+  25%{
+    opacity:.7;
+  }
+
+  100%{
+    opacity:0;
+    transform:
+      translate(-50%,-50%)
+      translate(var(--x),var(--y))
+      rotate(var(--r))
+      scale(1.4);
+  }
+
+}
+
+</style>
+</head>
+
+
+<body>
+
+<!-- 배경 하트 -->
+
+<div class="hearts">
+
+  <div class="bg-heart">♥</div>
+  <div class="bg-heart">♥</div>
+  <div class="bg-heart">♥</div>
+  <div class="bg-heart">♥</div>
+  <div class="bg-heart">♥</div>
+  <div class="bg-heart">♥</div>
+  <div class="bg-heart">♥</div>
+  <div class="bg-heart">♥</div>
+  <div class="bg-heart">♥</div>
+  <div class="bg-heart">♥</div>
+  <div class="bg-heart">♥</div>
+  <div class="bg-heart">♥</div>
+
+</div>
+
+
+<main class="card" id="mainCard">
+
+
+<!-- 처음 화면 -->
+
+<section id="drawScreen">
+
+<h1>⊹˚♡ 번호 뽑기 ♡˚⊹</h1>
+
+<p>
+원하는 숫자 범위를 입력한 뒤 뽑아주세요
+</p>
+
+
+<form id="drawForm">
+
+
+<div class="range">
+
+<input
+id="minNum"
+type="number"
+value="1"
+required
+>
+
+<span>~</span>
+
+<input
+id="maxNum"
+type="number"
+value="100"
+required
+>
+
+</div>
+
+
+<div class="exclude-wrap">
+
+<label
+class="exclude-label"
+for="excludeNums"
+>
+제외할 번호
+</label>
+
+<input
+id="excludeNums"
+type="text"
+placeholder="예: 3, 7, 12"
+>
+
+</div>
+
+
+<button type="submit">
+번호 뽑기
+</button>
+
+
+</form>
+
+</section>
+
+
+
+<!-- 결과 화면 -->
+
+<section id="resultScreen">
+
+
+<h1>
+⊹˚♡ 뽑힌 번호 ♡˚⊹
+</h1>
+
+
+<div class="resultBox">
+
+<div id="resultNumber">
+?
+</div>
+
+</div>
+
+
+<button
+id="againBtn"
+type="button"
+>
+한 번 더 뽑기
+</button>
+
+
+<button
+id="saveBtn"
+type="button"
+class="small"
+>
+결과 이미지 저장
+</button>
+
+
+<button
+id="changeBtn"
+type="button"
+class="small"
+>
+범위 다시 정하기
+</button>
+
+
+<div
+class="meta"
+id="rangeText"
+></div>
+
+
+<div
+class="meta"
+id="excludeText"
+></div>
+
+
+<div id="history"></div>
+
+
+</section>
+
+
+</main>
+
+
+<script>
+
+(function(){
+
+
+const drawScreen =
+document.getElementById("drawScreen");
+
+const resultScreen =
+document.getElementById("resultScreen");
+
+const resultNumber =
+document.getElementById("resultNumber");
+
+const minInput =
+document.getElementById("minNum");
+
+const maxInput =
+document.getElementById("maxNum");
+
+const excludeInput =
+document.getElementById("excludeNums");
+
+const rangeText =
+document.getElementById("rangeText");
+
+const excludeText =
+document.getElementById("excludeText");
+
+const history =
+document.getElementById("history");
+
+const saveBtn =
+document.getElementById("saveBtn");
+
+const mainCard =
+document.getElementById("mainCard");
+
+
+let currentMin = 1;
+let currentMax = 100;
+
+let excludedNumbers = [];
+
+let results = [];
+
+
+
+/* 제외 번호 읽기 */
+
+function parseExcludedNumbers(){
+
+const text =
+excludeInput.value.trim();
+
+if(!text){
+return [];
+}
+
+return [...new Set(
+
+text
+.split(/[,\s]+/)
+.map(Number)
+.filter(function(n){
+
+return Number.isInteger(n);
+
+})
+
+)];
+
+}
+
+
+
+/* 실제 뽑을 수 있는 번호 */
+
+function getAvailableNumbers(){
+
+const available = [];
+
+for(
+let i=currentMin;
+i<=currentMax;
+i++
+){
+
+if(
+!excludedNumbers.includes(i)
+){
+
+available.push(i);
+
+}
+
+}
+
+return available;
+
+}
+
+
+
+/* 랜덤 선택 */
+
+function randomFromArray(array){
+
+const index =
+Math.floor(
+Math.random() * array.length
+);
+
+return array[index];
+
+}
+
+
+
+/* 하트 와르르 */
+
+function heartBurst(){
+
+for(
+let i=0;
+i<35;
+i++
+){
+
+const heart =
+document.createElement("div");
+
+heart.className =
+"burst-heart";
+
+heart.textContent =
+"♥";
+
+
+const angle =
+Math.random()
+*
+Math.PI
+*
+2;
+
+
+const distance =
+90
++
+Math.random()
+*
+250;
+
+
+const x =
+Math.cos(angle)
+*
+distance;
+
+const y =
+Math.sin(angle)
+*
+distance;
+
+
+heart.style.setProperty(
+"--x",
+x + "px"
+);
+
+
+heart.style.setProperty(
+"--y",
+y + "px"
+);
+
+
+heart.style.setProperty(
+"--r",
+(Math.random()*80-40)
++
+"deg"
+);
+
+
+heart.style.fontSize =
+(18 + Math.random()*30)
++
+"px";
+
+
+heart.style.animationDuration =
+(1.3 + Math.random()*.8)
++
+"s";
+
+
+document.body.appendChild(
+heart
+);
+
+
+setTimeout(
+function(){
+
+heart.remove();
+
+},
+2300
+);
+
+}
+
+}
+
+
+
+/* 추첨 기록 */
+
+function updateHistory(){
+
+let text = "";
+
+results.forEach(
+function(number,index){
+
+text +=
+(index+1)
++
+"번째 추첨 결과 : "
++
+number
++
+"<br>";
+
+}
+);
+
+history.innerHTML =
+text;
+
+}
+
+
+
+/* 번호 뽑기 */
+
+function showResult(){
+
+const available =
+getAvailableNumbers();
+
+
+if(
+available.length === 0
+){
+
+alert(
+"뽑을 수 있는 번호가 없어요 ♡"
+);
+
+return;
+
+}
+
+
+const picked =
+randomFromArray(
+available
+);
+
+
+resultNumber.textContent =
+picked;
+
+
+results.push(
+picked
+);
+
+
+updateHistory();
+
+
+rangeText.textContent =
+"현재 범위 : "
++
+currentMin
++
+" ~ "
++
+currentMax;
+
+
+if(
+excludedNumbers.length > 0
+){
+
+excludeText.textContent =
+"제외 번호 : "
++
+excludedNumbers.join(", ");
+
+}
+
+else{
+
+excludeText.textContent =
+"";
+
+}
+
+
+drawScreen.style.display =
+"none";
+
+resultScreen.style.display =
+"block";
+
+
+heartBurst();
+
+}
+
+
+
+/* 첫 추첨 */
+
+document
+.getElementById("drawForm")
+.addEventListener(
+"submit",
+function(e){
+
+e.preventDefault();
+
+
+const min =
+Number(
+minInput.value
+);
+
+const max =
+Number(
+maxInput.value
+);
+
+
+if(
+!Number.isInteger(min)
+||
+!Number.isInteger(max)
+){
+
+alert(
+"정수를 입력해주세요 ♡"
+);
+
+return;
+
+}
+
+
+if(
+min > max
+){
+
+alert(
+"시작 숫자는 끝 숫자보다 작거나 같아야 해요 ♡"
+);
+
+return;
+
+}
+
+
+currentMin = min;
+
+currentMax = max;
+
+
+excludedNumbers =
+parseExcludedNumbers()
+.filter(
+function(n){
+
+return (
+n >= currentMin
+&&
+n <= currentMax
+);
+
+}
+);
+
+
+if(
+getAvailableNumbers().length
+===
+0
+){
+
+alert(
+"범위 안의 모든 번호가 제외되어 있어요 ♡"
+);
+
+return;
+
+}
+
+
+results = [];
+
+showResult();
+
+}
+);
+
+
+
+/* 한 번 더 */
+
+document
+.getElementById("againBtn")
+.addEventListener(
+"click",
+showResult
+);
+
+
+
+/* 범위 다시 정하기 */
+
+document
+.getElementById("changeBtn")
+.addEventListener(
+"click",
+function(){
+
+results = [];
+
+history.innerHTML = "";
+
+resultScreen.style.display =
+"none";
+
+drawScreen.style.display =
+"block";
+
+}
+);
+
+
+
+/* 결과 이미지 저장 */
+
+saveBtn.addEventListener(
+"click",
+async function(){
+
+try{
+
+saveBtn.disabled = true;
+
+saveBtn.textContent =
+"저장 중...";
+
+
+const canvas =
+await html2canvas(
+mainCard,
+{
+
+scale:2,
+
+backgroundColor:
+"#fffafd",
+
+useCORS:true
+
+}
+);
+
+
+const link =
+document.createElement("a");
+
+
+link.download =
+"번호뽑기_결과.png";
+
+
+link.href =
+canvas.toDataURL(
+"image/png"
+);
+
+
+link.click();
+
+
+}
+
+catch(error){
+
+alert(
+"이미지 저장 중 오류가 발생했어요 ㅠㅠ"
+);
+
+console.error(
+error
+);
+
+}
+
+finally{
+
+saveBtn.disabled = false;
+
+saveBtn.textContent =
+"결과 이미지 저장";
+
+}
+
+}
+);
+
+
+})();
+
+</script>
+
+
+<!-- PWA 서비스 워커 -->
+
+<script>
+
+if(
+'serviceWorker'
+in navigator
+){
+
+window.addEventListener(
+'load',
+function(){
+
+navigator
+.serviceWorker
+.register('./sw.js')
+
+.then(
+function(){
+
+console.log(
+'Service Worker 등록 완료!'
+);
+
+}
+)
+
+.catch(
+function(error){
+
+console.log(
+'Service Worker 등록 실패:',
+error
+);
+
+}
+);
+
+}
+);
+
+}
+
+</script>
+
+
+</body>
+</html>
